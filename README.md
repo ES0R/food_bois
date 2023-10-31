@@ -35,6 +35,12 @@ food_bois/
 └── .gitignore
 ```
 
+### Directory Descriptions:
+- `data/`: Contains the datasets required for each model.
+- `models/`: Stores the trained model checkpoints.
+- `notebooks/`: Used for storing Jupyter notebooks.
+- `scripts/`: Stores various utility scripts or the main code to run the experiments.
+
 ## Virtual Environment
 The project used python `3.10.7`. For testing reasons please use a virtual environment with the `requirements.txt` file.
 Preferable either with the name `deep` or `venv` as the `.gitignore` filters it out. To use the virtual environment on windows use the command to generate the virtual environment.
@@ -60,16 +66,3 @@ Note that if you want cuda to work with the software then use the following comm
 pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118
 
 
-
-
-### Directory Descriptions:
-- `data/`: Contains the datasets required for each model.
-- `models/`: Stores the trained model checkpoints.
-- `notebooks/`: Used for storing Jupyter notebooks.
-- `scripts/`: Stores various utility scripts or the main code to run the experiments.
-
-## Virtual Environment
-The project is developed using Python version `3.10.7`. To ensure compatibility, please use a virtual environment. The preferred environment names are `deep` or `venv`, as they are excluded by `.gitignore`.
-
-### Environment Setup on Windows:
-Create the virtual environment:
