@@ -1,0 +1,3 @@
+[submodule "Recipe-Generation-from-Food-Image"]
+	path = Recipe-Generation-from-Food-Image
+	url = https://github.com/navassherif98/Recipe-Generation-from-Food-Image.git
