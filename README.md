@@ -1,47 +1,31 @@
-# Project Synopsis for Deep Learning
+# Smørrebrød Image-to-Recipe Retrieval Project
 
-**Authors:** 
-- Daniel Jalel (s194291)
-- Emil Ramovic (s194149)
-- Magnus Bøje Madsen (s185382)
-- Cato Poulsen (s194127)
-- Andrew Blumensen (s194139)
+## Overview
+The Smørrebrød Image-to-Recipe Retrieval Project is an ambitious endeavor to bridge the gap between the culinary arts and artificial intelligence. By leveraging state-of-the-art computer vision and natural language processing techniques, this project aims to create a system that can recognize ingredients and reconstruct recipes from images and vice versa. Inspired by CLIP [12], the project utilizes a multimodal approach to understanding food by linking recipes and images.
 
-**Date:** October 2023
+## Goals
+- To retrieve a recipe from a list of known recipes given an image query.
+- To retrieve an image from a list of known images given a text recipe.
 
-## Motivation
+## Data
+The project utilizes the Food Ingredients and Recipes Dataset from Kaggle, comprising 13,582 images, each paired with a title, a list of ingredients, and cooking instructions.
 
-Our project aims to delve into object detection using various deep-learning techniques, contributing to the very core of the future of self-driving cars. By refining the computer's ability to detect and respond to visual cues, we envision a step closer to truly autonomous, safe, and efficient driving.
-
-As autonomous self-driving cars become more widespread, a notable shift from LiDAR technology to cameras for navigation has occurred. This shift has led to a heightened demand for advanced computer vision systems that can precisely detect and classify traffic-related information. This project compares different deep-learning techniques for object detection in terms of mean average precision (mAP) and real-time analysis/speed analysis.
-
-## Objective
-
-The main objective of this project is to implement and compare the speed and overall performance concerning the accuracy of three distinct object detection models:
-
-- **YOLO (You Only Look Once)**
-- **ViT (Visual Transformer)**
-- **AlexNet**
-
-AlexNet will serve as a simple baseline. These models will be assessed in the context of vehicle and robotics applications to gauge their appropriateness for real-time object recognition tasks. Object detection will be carried out on still image datasets as well as image sequence data sets.
+## Tasks
+1. **Image-to-Recipe Retrieval**: Develop a model that maps food images to their corresponding recipes using an image encoder (CNN or visual transformer) and a text encoder (text transformer or BERT).
+2. **Additional Text Modalities**: Enhance the model from Task 1 by incorporating extra textual information like instructions and ingredients during training.
+3. **Comparison with CLIP**: Benchmark the developed models against the performance of the CLIP model [12].
 
 ## Project File Structure
-
 ```
 .
-Project_Root/
+food_bois/
 │
-├── YOLO/
+├── DJ/ # Daniel & James project folder
 │   ├── models/
 │   ├── notebooks/
 │   └── scripts/
 │
-├── ViT/
-│   ├── models/
-│   ├── notebooks/
-│   └── scripts/
-│
-├── AlexNet/
+├── EM/ # Emil & Magnus project folder
 │   ├── models/
 │   ├── notebooks/
 │   └── scripts/
@@ -50,13 +34,6 @@ Project_Root/
 ├── README.md
 └── .gitignore
 ```
-
-In the above structure:
-- `data/` contains the datasets required for each model.
-- `models/` will store the trained model checkpoints.
-- `notebooks/` can be used to store Jupyter notebooks.
-- `scripts/` can store various utility scripts or the main code to run the experiments.
-
 
 ## Virtual Environment
 The project used python `3.10.7`. For testing reasons please use a virtual environment with the `requirements.txt` file.
@@ -81,4 +58,18 @@ deactivate
 Note that if you want cuda to work with the software then use the following commands after installing `requirements.txt`:
 ```
 pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118
-```
+
+
+
+
+### Directory Descriptions:
+- `data/`: Contains the datasets required for each model.
+- `models/`: Stores the trained model checkpoints.
+- `notebooks/`: Used for storing Jupyter notebooks.
+- `scripts/`: Stores various utility scripts or the main code to run the experiments.
+
+## Virtual Environment
+The project is developed using Python version `3.10.7`. To ensure compatibility, please use a virtual environment. The preferred environment names are `deep` or `venv`, as they are excluded by `.gitignore`.
+
+### Environment Setup on Windows:
+Create the virtual environment:
