@@ -1,5 +1,12 @@
 # Smørrebrød Image-to-Recipe Retrieval Project
 
+## To clone use:
+
+```
+git clone --recurse-submodules https://github.com/ES0R/food_bois.git
+```
+This clones the submodule that is used as a reference
+
 ## Overview
 The Smørrebrød Image-to-Recipe Retrieval Project is an ambitious endeavor to bridge the gap between the culinary arts and artificial intelligence. By leveraging state-of-the-art computer vision and natural language processing techniques, this project aims to create a system that can recognize ingredients and reconstruct recipes from images and vice versa. Inspired by CLIP [12], the project utilizes a multimodal approach to understanding food by linking recipes and images.
 
