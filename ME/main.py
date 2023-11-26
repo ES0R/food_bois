@@ -4,28 +4,40 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from tqdm import tqdm
-
+import time
 # Custom modules
 from data_loader import FoodDataset
 from image_encoder import ImageEncoder
 from text_encoder import TextEncoder
 from loss import ContrastiveLoss
 from torch.profiler import profile, record_function, ProfilerActivity
+import matplotlib.pyplot as plt 
 
+def save_plot(data, title, ylabel, filename):
+    plt.figure(figsize=(10, 6))
+    plt.plot(data)
+    plt.title(title)
+    plt.xlabel('Epoch')
+    plt.ylabel(ylabel)
+    plt.savefig(filename)
 
 
 if __name__ == '__main__':
-    # Initialize data transforms, dataset, and dataloader
+
+    # Data loader
     transform = transforms.Compose([
-        transforms.Resize((16, 16)),  # Reduced image resolution
+        transforms.Resize((274, 169)),  # Reduced image resolution
         transforms.ToTensor(),
     ])
 
-    csv_file = 'C:/Users/limez/OneDrive/Documents/DTU_git/food_bois/data/archive/Food Ingredients and Recipe Dataset with Image Name Mapping.csv'
-    img_dir = 'C:/Users/limez/OneDrive/Documents/DTU_git/food_bois/data/archive/Food Images/Food Images'
+    csv_file = '/zhome/95/b/147257/Desktop/food_bois/data/archive/Food Ingredients and Recipe Dataset with Image Name Mapping.csv'
+    img_dir = '/zhome/95/b/147257/Desktop/food_bois/data/archive/Food Images/Food Images'
 
     dataset = FoodDataset(csv_file=csv_file, img_dir=img_dir, transform=transform)
-    dataloader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
+
+    # Create data loaders
+    train_loader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4, pin_memory=True)
+
 
     #CUDA
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -34,15 +46,25 @@ if __name__ == '__main__':
     #Initialize encoders, loss function, and optimizer
     image_encoder = ImageEncoder().to(device)
     text_encoder = TextEncoder().to(device)
-    loss_fn = ContrastiveLoss(margin=1.0)
+    loss_fn = ContrastiveLoss(margin=0.5)
     optimizer = torch.optim.Adam(list(image_encoder.parameters()) + list(text_encoder.parameters()), lr=1e-4)
 
+
+    # Initialize logging variables
+    epoch_losses = []
+    epoch_times = []
+
     # Training loop with epochs
-    epochs = 10
+    epochs = 25
     for epoch in range(epochs):
-        with tqdm(dataloader, unit="batch") as tepoch:
-            for batch in tepoch:
-                tepoch.set_description(f"Epoch {epoch + 1}")
+        start_time = time.time()
+        total_loss = 0
+        total_val_loss = 0
+
+        # Training phase
+        with tqdm(train_loader, unit="batch") as train_epoch:
+            for batch in train_epoch:
+                train_epoch.set_description(f"Epoch {epoch + 1}")
 
                 images = batch['image'].to(device)
                 texts = batch['text']
@@ -55,41 +77,48 @@ if __name__ == '__main__':
                 inputs = text_encoder.tokenizer(texts, return_tensors='pt', padding=True, truncation=True)
                 inputs = {k: v.to(device) for k, v in inputs.items()}
 
-                # Start recording with profiler
-                with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], 
-                             record_shapes=True) as prof:
-                    with record_function("model_forward"):
-                        # Forward pass through the encoders
-                        anchor_features = image_encoder(images)
-                        positive_features = text_encoder.model(**inputs).last_hidden_state.mean(dim=1)  # Use the mean of the last hidden state
+                # Forward pass through the encoders
+                anchor_features = image_encoder(images)
+                positive_features = text_encoder.model(**inputs).last_hidden_state.mean(dim=1)
 
-                    with record_function("generate_negative_samples"):
-                        # Sample negatives for contrastive loss
-                        negative_indices = torch.randperm(len(dataset))[:len(images)].tolist()
-                        negative_texts = [dataset[i]['text'] for i in negative_indices]
-                        negative_inputs = text_encoder.tokenizer(negative_texts, return_tensors='pt', padding=True, truncation=True)
-                        negative_inputs = {k: v.to(device) for k, v in negative_inputs.items()}
-                        negative_features = text_encoder.model(**negative_inputs).last_hidden_state.mean(dim=1)
+                # Sample negatives for contrastive loss
+                negative_indices = torch.randperm(len(dataset))[:len(images)].tolist()
+                negative_texts = [dataset[i]['text'] for i in negative_indices]
+                negative_inputs = text_encoder.tokenizer(negative_texts, return_tensors='pt', padding=True, truncation=True)
+                negative_inputs = {k: v.to(device) for k, v in negative_inputs.items()}
+                negative_features = text_encoder.model(**negative_inputs).last_hidden_state.mean(dim=1)
 
-                    with record_function("loss_calculation"):
-                        # Compute loss
-                        loss = loss_fn(anchor_features, positive_features, negative_features)
+                # Compute loss
+                loss = loss_fn(anchor_features, positive_features, negative_features)
 
-                    with record_function("backpropagation"):
-                        # Backpropagate and optimize
-                        optimizer.zero_grad()
-                        loss.backward()
-                        optimizer.step()
+                # Backpropagation and optimization
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
-                # End of batch - print profiler results
-                #print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+                total_loss += loss.item()
+                train_epoch.set_postfix(loss=loss.item())
 
-                # Update tqdm postfix
-                tepoch.set_postfix(loss=loss.item())
-
-            print(f"Epoch {epoch + 1} completed")
-            torch.cuda.empty_cache()  # Clear cache after each epoch
+       
+        epoch_duration = time.time() - start_time
+        epoch_losses.append(total_loss / len(train_loader))
+        epoch_times.append(epoch_duration)
+        print(f"Epoch {epoch + 1} completed")
 
     # Save model checkpoints
-    torch.save(image_encoder.state_dict(), 'image_encoder.pth')
-    torch.save(text_encoder.state_dict(), 'text_encoder.pth')
+    torch.save(image_encoder.state_dict(), 'image_encoder_new_1_25.pth')
+    torch.save(text_encoder.state_dict(), 'text_encoder_new_1_25.pth')
+
+    # Save plots
+    save_plot(epoch_losses, 'Training Loss', 'Loss', 'loss_plot_new_1_25.png')
+    save_plot(epoch_times, 'Time per Epoch', 'Time (s)', 'time_per_epoch_plot_new_1_25.png')
+
+
+
+
+
+
+
+
+
+

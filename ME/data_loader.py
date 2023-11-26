@@ -7,8 +7,10 @@ from torch.utils.data import Dataset
 
 class FoodDataset(Dataset):
     def __init__(self, csv_file, img_dir, transform=None):
+        
         self.df = pd.read_csv(csv_file)
         self.df = self.df[self.df['Image_Name'] != '#NAME?']  # Filter out invalid image names
+        self.df = self.df[self.df['Image_Name'] != 'pan-seared-salmon-on-baby-arugula-242445']  # Filter out invalid image names
         self.img_dir = img_dir
         self.transform = transform
 
@@ -27,4 +29,4 @@ class FoodDataset(Dataset):
         instructions = str(self.df.iloc[idx, 3])  # Index 2 for 'Instructions'
         combined_text = f"{title} {ingredients} {instructions}"
 
-        return {'image': image, 'text': combined_text}
+        return {'image': image, 'text': combined_text, 'image_name': self.df.iloc[idx, 4]}
